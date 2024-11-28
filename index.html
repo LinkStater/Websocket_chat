@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat em Tempo Real</title>
+</head>
+
+<body>
+    <h1>Chat em Tempo Real</h1>
+    <div id="chat"></div>
+    <input type="text" id="mensagem" placeholder="Digite sua mensagem">
+    <button onclick="enviarMensagem()">Enviar</button>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8080');
+        const chatDiv = document.getElementById('chat');
+
+        // Receber mensagens do servidor
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            console.log(data);
+            
+            if (data.tipo === 'historico') {
+                // Exibir histórico de mensagens
+                chatDiv.innerHTML = data.mensagens.map(msg => `<p>${msg}</p>`).join('');
+            } else if (data.tipo === 'novaMensagem') {
+                // Exibir nova mensagem
+                chatDiv.innerHTML += `<p>${data.mensagem}</p>`;
+            }
+        };
+
+        // Enviar mensagens ao servidor
+        function enviarMensagem() {
+            const input = document.getElementById('mensagem');
+            const mensagem = input.value;
+
+            if (mensagem.trim()) {
+                ws.send(mensagem);
+                input.value = '';
+            }
+        }
+    </script>
+</body>
+
+</html>
